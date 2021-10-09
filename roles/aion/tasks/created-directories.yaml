@@ -1,0 +1,32 @@
+---
+- name: make user directories
+  file: 
+    path: "{{ work_dir }}/{{ item }}"
+    state: directory
+  with_items:
+    - "AionCore"
+    - "DataSweeper"
+    - "BackendService"
+    - "Runtime"
+    - "MysqlKube"
+    - "UI"
+
+- name: make aion directories
+  become: yes
+  file: 
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "/var/lib/aion"
+    - "/var/lib/aion/default/config"
+    - "/var/lib/aion/default/Data"
+    - "/var/lib/aion/prj/config"
+    - "/var/lib/aion/Data/"
+    - "/var/lib/aion/Data/deployment"
+    - "/var/lib/aion/Data/prj"
+    - "/mnt"
+
+- name: add AION_HOME
+  lineinfile:
+    dest: ~/.bashrc
+    line: export AION_HOME=/var/lib/aion

@@ -1,0 +1,83 @@
+---
+- name: get kubernetes version
+  shell: |
+    kubeadm version | grep GitVersion | sed -E 's/^.*GitVersion:"([^"]+)".*$/\1/'
+  register: kube_version
+
+- name: set_fact
+  set_fact:
+    kube_version: "{{ kube_version.stdout }}"
+
+- name: place kubeadm-config.yaml
+  become: yes
+  template:
+    src: kubeadm-config.yaml
+    dest: /etc/kubernetes/kubeadm-config.yaml
+    force: yes
+
+- name: initialize the cluster
+  become: yes
+  shell: kubeadm init --config /etc/kubernetes/kubeadm-config.yaml
+
+- name: create .kube directory
+  file:
+    path: "/home/{{ user_name }}/.kube"
+    state: directory
+    mode: 0755
+
+- name: Check admin.conf file exists.
+  become: yes
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: k8s_conf
+
+- name: copy admin.conf to user's kube config
+  become: yes
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "/home/{{ user_name }}/.kube/config"
+    remote_src: yes
+    owner: "{{ user_name }}"
+  when: k8s_conf.stat.exists
+
+- name: Start kubelet
+  become: yes
+  systemd:
+    name: kubelet.service
+    state: started
+    enabled: yes
+
+- name: Deploy Flannel
+  # become_user: {{ user_name }}
+  command: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/584c19aebe302db6318e2063e1359a78a63a4ecf/Documentation/kube-flannel.yml
+
+## Master Nodeの隔離を無効にする
+- name: Disabling Master Node isolation
+  command: kubectl taint nodes --all node-role.kubernetes.io/master-
+
+- name: set Eviction Policy
+  become: yes
+  blockinfile:
+    path: /var/lib/kubelet/config.yaml
+    block: |
+      evictionHard:
+        memory.available: "100Mi"
+        nodefs.available: "10%"
+        nodefs.inodesFree: "5%"
+
+- name: set kubectl completion
+  blockinfile:
+    path: ~/.bashrc
+    block: |
+      source <(kubectl completion bash)
+      alias k='kubectl'
+      alias W="watch kubectl get pod"
+      complete -o default -F __start_kubectl k
+
+- name: daemon-reload
+  become: yes
+  systemd:
+    daemon_reload: yes
+    name: kubelet.service
+    state: restarted
+    enabled: yes

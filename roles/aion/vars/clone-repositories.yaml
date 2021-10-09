@@ -1,0 +1,24 @@
+---
+repos_in_AionCore:
+  - repo: aion-core
+    branch: develop
+  - repo: python-base-images
+    branch: master
+
+repos_in_aion_service_definitions:
+  - repo: aion-service-definitions
+    branch: release-omotebako
+
+repos_in_aion_core_manifests:
+  - repo: aion-core-manifests
+    branch: master
+
+repos_in_DataSweeper:
+  - repo: data-sweeper-kube
+    branch: release-omotebako
+  - repo: data-sweeper-batch-kube
+    branch: release-omotebako
+  - repo: container-sweeper-kube
+    branch: master
+  - repo: container-image-sweeper-kube
+    branch: master

@@ -1,0 +1,28 @@
+---
+- name: generate k8s resources
+  shell: make create-deployment-yml-default PV_SIZE={{ dbmysql_storage_size }} USER_NAME={{ dbmysql_user }} USER_PASSWORD={{ dbmysql_password }}
+  args:
+    chdir: "{{ work_dir }}/MysqlKube/mysql-kube"
+
+- name: mysql 起動
+  shell: |
+    # 既にsql起動済みなら処理しない
+    kubectl get pods | grep mysql
+    if [ $? != 0 ]; then
+      cd {{ work_dir }}/MysqlKube/mysql-kube
+      kubectl apply -f ./
+    fi
+
+- name: mysql 起動まで待機
+  wait_for: 
+    port: 30000
+
+- name: mysql latonaの権限変更
+  shell: |
+    mysql -uroot -proot -h 127.0.XXX.XXX -P 30000 -e "GRANT ALL ON *.* TO {{ dbmysql_user }}@'%' IDENTIFIED BY '{{ dbmysql_password }}';"
+  retries: 10
+  delay: 5
+
+# - name: create mysql database for PeripheralDevice
+#   shell: |
+#     mysql -u{{ dbmysql_user }} -p{{ dbmysql_password }} -h 127.0.XXX.XXX -P 30000 -e "CREATE DATABASE IF NOT EXISTS PeripheralDevice;"

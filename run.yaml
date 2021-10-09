@@ -1,0 +1,17 @@
+---
+- hosts: edge
+  gather_facts: False
+  roles: # 実行するコマンド群の定義
+    # - ex
+
+    # 起動に microSD を利用するときは、次の行のコメントアウトを外す
+    # - sdboot
+    # 起動に SSD を利用するときは、次の行のコメントアウトを外す
+    # - ssdboot
+
+    - common
+    - cuda
+    - docker
+    - kubernetes
+    - mysql
+    - aion

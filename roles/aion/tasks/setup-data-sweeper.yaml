@@ -1,0 +1,36 @@
+---
+- name: create mysql database for data-sweeper-batch-kube
+  shell: |
+    cd {{ work_dir }}/DataSweeper/data-sweeper-batch-kube/sql
+    mysql -u{{ dbmysql_user }} -p{{ dbmysql_password }} -h 127.0.0.1 -P 30000 < DataSweeper_sweep_directories.sql
+
+- name: set data-sweeper-batch-kube mysql user
+  replace:
+    path: "{{ work_dir }}/DataSweeper/data-sweeper-batch-kube/mysql-config.json"
+    regexp: "MYSQL_USER_XXX"
+    replace: "{{ dbmysql_user }}"
+
+- name: set data-sweeper-batch-kube mysql password
+  replace:
+    path: "{{ work_dir }}/DataSweeper/data-sweeper-batch-kube/mysql-config.json"
+    regexp: "MYSQL_PASSWORD_XXX"
+    replace: "{{ dbmysql_password }}"
+
+- name: set data-sweeper-batch-kube firefox home path
+  replace:
+    path: "{{ work_dir }}/DataSweeper/data-sweeper-batch-kube/data-sweeper-batch-kube.yaml"
+    regexp: "HOME_PATH_XXX"
+    replace: "/home/{{ user_name }}"
+
+- name: Set DataSweeper/data-sweeper-batch-kube/mysql-config.json & data-sweeper-batch-kube.yaml to not be git version controlled
+  shell: |
+    cd {{ work_dir }}/DataSweeper/data-sweeper-batch-kube
+    git update-index --skip-worktree mysql-config.json
+    git update-index --skip-worktree data-sweeper-batch-kube.yaml
+
+- name: set data-sweeper.yml in /var/lib/aion/default/config/
+  become: yes
+  template:
+    src: data-sweeper.yml
+    dest: /var/lib/aion/default/config/data-sweeper.yml
+    force: yes

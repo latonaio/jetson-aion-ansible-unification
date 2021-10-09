@@ -1,0 +1,39 @@
+---
+- name: apt update upgrade
+  become: yes
+  apt:
+    update_cache: yes
+    upgrade: full
+    autoremove: yes
+
+- name: install packages
+  become: yes
+  apt:
+    state: present
+    update_cache: yes
+    name:
+      - curl
+      # - wget
+      # - tar
+      - apt-transport-https
+      - python3-pip
+      # - python-pip
+      - make
+      # - mysql-workbench
+      - mysql-client
+      - git-core
+      - firefox
+      - firefox-locale-ja
+      - samba
+      - smbnetfs
+
+# docker操作に必須のライブラリ
+- name: pip common package are installed
+  pip:
+    name: docker-py>=1.0
+
+# - name: pip3 commmon package install
+#   pip:
+#     executable: pip3
+#     name:
+#       - jetson-stats

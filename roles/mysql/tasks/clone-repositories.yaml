@@ -1,0 +1,11 @@
+---
+- name: import vars from clone-repositories.yaml
+  include_vars: clone-repositories.yaml
+  
+- name: git clone repos in MysqlKube
+  git:
+    repo: "git@bitbucket.org:latonaio/{{ item.repo }}.git"
+    dest: "{{ work_dir }}/MysqlKube/{{ item.repo }}"
+    version: "{{ item.branch }}"
+    accept_hostkey: true
+  with_items: "{{ repos_in_MysqlKube }}"

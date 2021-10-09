@@ -1,0 +1,53 @@
+---
+- name: go-install vars
+  include_vars: go-install.yaml
+
+- name: git clone goenv
+  git:
+    repo: https://github.com/syndbg/goenv.git
+    dest: "/home/{{ user_name }}/{{ goenv_path }}"
+
+- name: add go path
+  blockinfile:
+    path: ~/.bashrc
+    block: |
+      export PATH=$PATH:/usr/local/go/bin
+      export GOPATH=$HOME/go
+      export GOENV_ROOT=$HOME/{{ goenv_path }}
+      export PATH=$GOPATH/bin:$GOENV_ROOT/bin:$PATH
+      eval "$(goenv init -)"
+      export GO111MODULE=on
+      export GOPROXY=direct
+      export GOSUMDB=off
+
+- name: create versions directory
+  become_user: "{{ user_name }}"
+  file:
+    path: "/home/{{ user_name }}/{{ item }}"
+    state: directory
+    mode: 0775
+  with_items:
+    - "{{ goenv_path }}/versions"
+
+- name: check installed versions
+  shell:
+    ls /home/{{ user_name }}/{{ goenv_path }}/versions
+  register: installed_nodes
+
+- set_fact:
+    nodes: "{{ goenv_versions | difference(installed_nodes.stdout_lines) }}"
+
+- name: install versions {{ nodes }}
+  become_user: "{{ user_name }}"
+  shell:
+    ~/{{ goenv_path }}/bin/goenv install "{{ item }}"
+  with_items: "{{ nodes }}"
+  when: nodes | length | int > 0
+
+- name: set global version to {{ goenv_versions | max }}
+  become_user: "{{ user_name }}"
+  lineinfile:
+    dest: /home/{{ user_name }}/{{ goenv_path }}/version
+    line: "{{ goenv_versions | max }}"
+    state: present
+    create: yes

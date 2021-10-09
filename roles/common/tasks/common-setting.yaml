@@ -1,0 +1,93 @@
+---
+# - name: run jetson fan
+#   systemd:
+#     name: jetson_fan.service
+#     state: restarted
+#     enabled: yes
+
+# - name: activate jetson stats
+#   systemd:
+#     name: jetson_stats.service
+#     state: restarted
+#     enabled: yes
+
+- name: create service to enable fan at startup
+  become: yes
+  template:
+    src: enable-fan.service
+    dest: /etc/systemd/system/enable-fan.service
+    force: yes
+
+- name: enable fan now and at startup time
+  become: yes
+  systemd:
+    daemon_reload: yes
+    name: enable-fan.service
+    state: restarted
+    enabled: yes
+
+- name: create service to disable L4T-README drive
+  become: yes
+  template:
+    src: disable-l4t-readme-drive.service
+    dest: /etc/systemd/system/disable-l4t-readme-drive.service
+    force: yes
+
+- name: disable L4T-README drive from next boot time
+  become: yes
+  systemd:
+    daemon_reload: yes
+    name: disable-l4t-readme-drive.service
+    enabled: yes
+
+- name: disable turn scrren off when inactive
+  shell: gsettings set org.gnome.desktop.session idle-delay 0
+  become: no
+
+- name: screen lock disable
+  shell: dbus-launch gsettings set org.gnome.desktop.screensaver lock-enabled false
+  become: no
+
+- name: no require password after lock
+  shell: dbus-launch gsettings set org.gnome.desktop.screensaver ubuntu-lock-on-suspend false
+  become: no
+
+- name: set timezone to Asia/Tokyo
+  timezone:
+    name: Asia/Tokyo
+  become: yes
+  become_method: sudo
+
+# 日本語キーボード設定
+- name: Install ibus-mozc
+  become: yes
+  apt:
+    state: present
+    update_cache: yes
+    name: ibus-mozc
+
+- name: 日本語キーボード設定
+  become: yes
+  replace:
+    path: /usr/share/ibus/component/mozc.xml
+    regexp: "<layout>default</layout>"
+    replace: "<layout>jp</layout>"
+
+- name: change input method to mozc
+  become: no
+  shell: |
+    gsettings set org.gnome.desktop.input-sources sources "[('ibus', 'mozc-jp')]"
+
+- name: enable ibus by default
+  become: no
+  template:
+    src: xprofile
+    dest: /home/{{ user_name }}/.xprofile
+    force: yes
+
+- name: change x11 acceleration method
+  become: yes
+  replace:
+    path: /etc/X11/xorg.conf
+    regexp: '(^Section "Device"$\n(?:^    .+$\n)+)(^EndSection$)'
+    replace: '\1    Option      "AccelMethod" "xaa"\n\2'

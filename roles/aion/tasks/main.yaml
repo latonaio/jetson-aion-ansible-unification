@@ -1,0 +1,6 @@
+---
+- include: created-directories.yaml
+- include: clone-repositories.yaml
+- include: pull-images.yaml
+- include: setup-data-sweeper.yaml
+- include: docker-build.yaml

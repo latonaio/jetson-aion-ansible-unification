@@ -1,0 +1,5 @@
+---
+- include: common-setting.yaml
+- include: format.yaml
+- include: install.yaml
+- include: reboot.yaml

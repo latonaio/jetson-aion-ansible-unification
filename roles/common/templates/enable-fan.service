@@ -1,0 +1,9 @@
+[Unit]
+Description=Enable fan
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo 150 > /sys/devices/pwm-fan/target_pwm'
+
+[Install]
+WantedBy=multi-user.target

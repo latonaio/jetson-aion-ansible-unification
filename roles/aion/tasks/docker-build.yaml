@@ -1,0 +1,16 @@
+---
+- name: build aion-core
+  shell:
+    cmd: make docker-build
+    chdir: "{{ work_dir }}/AionCore/aion-core"
+
+- name: build data-sweeper-batch-kube
+  shell:
+    cmd: make docker-build
+    chdir: "{{ work_dir }}/DataSweeper/data-sweeper-batch-kube"
+
+- name: build data-sweeper-kube
+  shell:
+    cmd: make docker-build
+    chdir: "{{ work_dir }}/DataSweeper/data-sweeper-kube"
+

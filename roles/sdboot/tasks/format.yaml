@@ -1,0 +1,28 @@
+---
+- name: マウントされているパーティションの取得
+  shell: |
+    mount | grep '^/dev/mmcblk1p' | sed -E 's/^.+? on ([^ ]+).*$/\1/'
+  register: mountpoints
+
+- name: パーティションのアンマウント
+  become: yes
+  shell: |
+    umount -f {{ item | quote }}
+  with_items: "{{ mountpoints.stdout_lines }}"
+
+- name: シングルパーティション化
+  become: yes
+  shell: |
+    printf 'g\nn\n\n\n\nw\n' | fdisk -W always /dev/mmcblk1
+  register: result
+  failed_when: result.rc not in [0, 1]
+
+- name: パーティションテーブルを再認識させる
+  become: yes
+  shell: |
+    partprobe
+
+- name: パーティションのフォーマット
+  become: yes
+  shell: |
+    mkfs.ext4 /dev/mmcblk1p1

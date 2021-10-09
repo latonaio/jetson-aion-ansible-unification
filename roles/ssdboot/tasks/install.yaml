@@ -1,0 +1,82 @@
+---
+- name: マウントディレクトリの作成
+  file:
+    path: /tmp/newroot
+    state: directory
+
+- name: SSD のマウント
+  become: yes
+  shell: |
+    mount /dev/nvme0n1p1 /tmp/newroot
+
+- name: システムディレクトリの作成
+  become: yes
+  file:
+    path: "/tmp/newroot{{ item }}"
+    state: directory
+  with_items:
+    - /boot
+    - /dev
+    - /proc
+    - /run
+    - /sys
+    - /tmp
+
+- name: コピー対象の取得
+  find:
+    paths: /
+    file_type: any
+    excludes:
+      - boot
+      - dev
+      - lost+found
+      - proc
+      - run
+      - sys
+      - tmp
+  register: items
+
+- name: データのコピー
+  become: yes
+  # 属性を維持したままコピーするため、cp -a コマンドを利用
+  shell: |
+    cp -a {{ item.path | quote }} /tmp/newroot
+  with_items: "{{ items.files }}"
+
+- name: eMMC のマウント先を作成
+  become: yes
+  file:
+    path: /tmp/newroot/mnt/emmc-root
+    state: directory
+    mode: 0000
+
+- name: マウント設定の変更
+  become: yes
+  template:
+    src: fstab
+    dest: /tmp/newroot/etc/fstab
+    force: yes
+
+- name: ブートディレクトリのバックアップ
+  become: yes
+  shell: |
+    cp -a /boot /boot_backup
+
+- name: パーティション ID の取得
+  become: yes
+  shell: |
+    blkid /dev/nvme0n1p1 | sed -E 's/^.*PARTUUID="([^"]+)".*$/\1/'
+  register: partuuid
+
+- name: ブートディスクの変更
+  become: yes
+  # デバイス名 nvme0n1p1 で指定すると、nvidia 製の init スクリプトから認識されない
+  # ([abcdefklmnps0-9]* しか認識しない)
+  replace:
+    path: /boot/extlinux/extlinux.conf
+    regexp: /dev/mmcblk0p1
+    replace: "PARTUUID={{ partuuid.stdout }}"
+
+- name: 書き込み完了を待機
+  shell: |
+    sync

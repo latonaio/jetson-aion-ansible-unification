@@ -1,0 +1,17 @@
+---
+user_name: XXXXXX
+host_name: XXXXXX
+ip_address: 192.168.XXX.XXX
+azure_iot_connection_string: HostName=XXXXXXXXXXXXXXXXXXXXXXXXXX
+dbmysql_user: XXXXXX
+dbmysql_password: XXXXXXXX
+dbmysql_storage_size: 1Gi
+dbmysql_dbname: XXXXXX
+work_dir: "/home/{{ user_name }}/{{ host_name }}"
+api_access_key: XXXXXXXXXXXX
+
+api_endpoint: "XXXXXXXXXXXXX"
+smb_ip_address: 192.168.XXX.XX
+smb_workgroup: WORKGROUP
+smb_user: test
+smb_password: XXXXXXXX

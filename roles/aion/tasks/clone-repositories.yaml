@@ -1,0 +1,32 @@
+---
+- name: import vars from clone-repositories.yaml
+  include_vars: clone-repositories.yaml
+
+- name: git clone repos in AionCore
+  git:
+    repo: "git@bitbucket.org:latonaio/{{ item.repo }}.git"
+    dest: "{{ work_dir }}/AionCore/{{ item.repo }}"
+    version: "{{ item.branch }}"
+    accept_hostkey: true
+  with_items: "{{ repos_in_AionCore }}"
+
+- name: git clone services.yml
+  git:
+    repo: "git@bitbucket.org:latonaio/{{ item.repo }}.git"
+    dest: "{{ work_dir }}/{{ item.repo }}"
+    version: "{{ item.branch }}"
+  with_items: "{{ repos_in_aion_service_definitions }}"
+
+- name: git clone aion-core-manifest
+  git:
+    repo: "git@bitbucket.org:latonaio/{{ item.repo }}.git"
+    dest: "{{ work_dir }}/{{ item.repo }}"
+    version: "{{ item.branch }}"
+  with_items: "{{ repos_in_aion_core_manifests }}"
+
+- name: git clone repos in DataSweeper
+  git:
+    repo: "git@bitbucket.org:latonaio/{{ item.repo }}.git"
+    dest: "{{ work_dir }}/DataSweeper/{{ item.repo }}"
+    version: "{{ item.branch }}"
+  with_items: "{{ repos_in_DataSweeper }}"

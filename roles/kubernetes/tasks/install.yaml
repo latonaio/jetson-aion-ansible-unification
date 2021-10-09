@@ -1,0 +1,40 @@
+---
+- name: swap Off
+  become: yes
+  command: swapoff -a
+
+# swap が作成されないように nvzramconfig.service を無効化
+# nvidia-l4t-init のアップデート時に再度有効になってしまうので
+# 振る舞いを変更して何もしないサービスにする
+- name: disable swap permanently - create directory
+  become: yes
+  file:
+    path: /etc/systemd/system/nvzramconfig.service.d
+    state: directory
+
+- name: disable swap permanently - place config file
+  become: yes
+  template:
+    src: nvzramconfig.override.conf
+    dest: /etc/systemd/system/nvzramconfig.service.d/override.conf
+    force: yes
+
+- name: Add Google Cloud Offical key
+  become: yes
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: add k8s source list
+  become: yes
+  shell: echo "deb https://apt.kubernetes.io/ kubernetes-xenial main"  >> /etc/apt/sources.list.d/kubernetes.list
+
+- name: k8s package are installed
+  become: yes
+  apt:
+    state: present
+    update_cache: yes
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl

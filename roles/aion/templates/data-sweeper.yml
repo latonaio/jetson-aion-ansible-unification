@@ -1,0 +1,14 @@
+sweepTargets:
+  - name: 'image'
+    fileExtention: [ 'jpg', 'png' ]
+    interval: 500
+  - name: 'movie'
+    fileExtention: [ ]
+    interval: 5000
+  - name: 'text'
+    fileExtention: [ 'txt', 'json' ]
+    interval: 10000
+ignoreMicroservices:
+  - microservice:  
+    fileExtention: [ ]
+    fileName: [ ]

@@ -1,0 +1,57 @@
+---
+- name: enabled DOCKER_BUILDKIT
+  lineinfile:
+    dest: ~/.bashrc
+    line: export DOCKER_BUILDKIT=1
+
+- name: export DOCKER_BUILDKIT
+  shell: export DOCKER_BUILDKIT=1
+
+- name: change deamom.json for nvidia
+  become: yes
+  template:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+    force: yes
+
+- name: add user to docker group
+  become: yes
+  command:
+    cmd: "gpasswd -a {{ user_name }} docker"
+
+- name: reboot to reflect changes of docker group
+  become: yes
+  systemd:
+    name: "docker.service"
+    state: "restarted"
+    enabled: yes
+  
+- name: Docker権限設定後の再起動
+  become: yes
+  async: 1
+  poll: 0
+  shell: "sleep 3 && reboot"
+
+- name: 再起動完了まで待機
+  local_action: wait_for host={{ inventory_hostname }} port=22 state=started delay=60
+  become: no
+
+- name: Login DockerHub
+  docker_login:
+    username: XXXXXXXXX
+    password: XXXXXXXXXX
+    debug: yes
+
+- name: start docker service
+  become: yes
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+# NOTE: ファンがjatpack.4.4からjetson_performance.serviceで回らないため、
+# 一時的に回す
+# - name: run jetson fan
+#   become: yes
+#   shell: jetson_clocks
+#   ignore_errors: true

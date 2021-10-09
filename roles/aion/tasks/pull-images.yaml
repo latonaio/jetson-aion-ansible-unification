@@ -1,0 +1,16 @@
+---
+- name: import vars from pull-images.yaml
+  include_vars: pull-images.yaml
+
+- name: needed-pull-repository
+  block:
+    - name: pull envoy image
+      docker_image:
+        name: "{{ item.name }}:{{ item.version }}"
+        source: pull
+      with_items: "{{ pull_images }}"
+  rescue:
+    - debug:
+        msg: 'cannot pull envoy image'
+
+  

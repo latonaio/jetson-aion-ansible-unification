@@ -1,0 +1,10 @@
+[Unit]
+Description=Disable L4T-README drive
+After=nv-l4t-usb-device-mode.service
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/losetup -d /dev/loop0
+
+[Install]
+WantedBy=multi-user.target

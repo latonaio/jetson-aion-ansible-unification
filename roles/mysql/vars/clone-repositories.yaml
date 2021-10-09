@@ -1,0 +1,4 @@
+---
+repos_in_MysqlKube:
+  - repo: mysql-kube
+    branch: master

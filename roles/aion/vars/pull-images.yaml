@@ -1,0 +1,6 @@
+---
+pull_images:
+  - name: envoyproxy/envoy
+    version: v1.16-latest
+  - name: rabbitmq
+    version: 3.9.5-management-alpine

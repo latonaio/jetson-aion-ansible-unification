@@ -1,0 +1,5 @@
+---
+- include: common-packages.yaml
+- include: common-setting.yaml
+- include: firefox-setting.yaml
+- include: go-install.yaml

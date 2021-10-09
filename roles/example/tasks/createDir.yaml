@@ -1,0 +1,31 @@
+---
+- name: variable print
+  debug: 
+    msg: "{{ work_dir }}"
+
+- name: variable test
+  become: yes
+  file:
+    path: "{{ work_dir }}/tashiro"
+    state: "directory"
+    mode: "1777"
+
+
+- name: create directories for omotebako
+  file: 
+    path: "{{ item }}" 
+    state: "directory"
+  loop: 
+    - "{{ work_dir }}/tashiro"
+    # - "{{ work_dir }}/tashiro/testa"
+    # - "{{ work_dir }}/tashiro/testb"
+    # - "{{ work_dir }}/tashiro/testb/testc"
+      
+
+
+
+- name: create file
+  copy:
+    dest: "{{ work_dir }}/tashiro/testa"
+    src: "myjson.json"
+

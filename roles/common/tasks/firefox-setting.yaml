@@ -1,0 +1,25 @@
+---
+- name: create firefox setting directory
+  file:
+    path: /home/{{ user_name }}/.mozilla/firefox/default-release
+    mode: 0755
+    state: directory
+    recurse: yes
+
+- name: copy installs.ini
+  template:
+    src: firefox/installs.ini
+    dest: /home/{{ user_name }}/.mozilla/firefox/installs.ini
+    force: yes
+
+- name: copy profiles.ini
+  template:
+    src: firefox/profiles.ini
+    dest: /home/{{ user_name }}/.mozilla/firefox/profiles.ini
+    force: yes
+
+- name: copy user.js
+  template:
+    src: firefox/user.js
+    dest: /home/{{ user_name }}/.mozilla/firefox/default-release/user.js
+    force: yes

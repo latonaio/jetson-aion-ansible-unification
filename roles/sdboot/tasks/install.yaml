@@ -1,0 +1,67 @@
+---
+- name: マウントディレクトリの作成
+  file:
+    path: /tmp/newroot
+    state: directory
+
+- name: microSD のマウント
+  become: yes
+  shell: |
+    mount /dev/mmcblk1p1 /tmp/newroot
+
+- name: システムディレクトリの作成
+  become: yes
+  file:
+    path: "/tmp/newroot{{ item }}"
+    state: directory
+  with_items:
+    - /dev
+    - /proc
+    - /run
+    - /sys
+    - /tmp
+
+- name: コピー対象の取得
+  find:
+    paths: /
+    file_type: any
+    excludes:
+      - dev
+      - lost+found
+      - proc
+      - run
+      - sys
+      - tmp
+  register: items
+
+- name: データのコピー
+  become: yes
+  # 属性を維持したままコピーするため、cp -a コマンドを利用
+  shell: |
+    cp -a {{ item.path | quote }} /tmp/newroot
+  with_items: "{{ items.files }}"
+
+- name: eMMC のマウント先を作成
+  become: yes
+  file:
+    path: /tmp/newroot/mnt/emmc-root
+    state: directory
+    mode: 0000
+
+- name: マウント設定の変更
+  become: yes
+  template:
+    src: fstab
+    dest: /tmp/newroot/etc/fstab
+    force: yes
+
+- name: ブートディスクの変更
+  become: yes
+  replace:
+    path: /tmp/newroot/boot/extlinux/extlinux.conf
+    regexp: /dev/mmcblk0p1
+    replace: /dev/mmcblk1p1
+
+- name: 書き込み完了を待機
+  shell: |
+    sync

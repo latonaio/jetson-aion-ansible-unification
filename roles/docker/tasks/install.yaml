@@ -1,0 +1,7 @@
+---
+- name: install docker.io
+  become: yes
+  apt:
+    state: present
+    name:
+      - docker.io

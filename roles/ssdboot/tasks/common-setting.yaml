@@ -1,0 +1,20 @@
+---
+- name: turn on fan temporarily
+  shell: echo 150 > /sys/devices/pwm-fan/target_pwm
+  become: yes
+
+# common/tasks/common-setting.yaml 内の一部の設定を
+# SSD ブート設定の際も先にしてしまいたいので、
+# ここに一部をコピーしています
+
+- name: disable turn scrren off when inactive
+  shell: gsettings set org.gnome.desktop.session idle-delay 0
+  become: no
+
+- name: screen lock disable
+  shell: dbus-launch gsettings set org.gnome.desktop.screensaver lock-enabled false
+  become: no
+
+- name: no require password after lock
+  shell: dbus-launch gsettings set org.gnome.desktop.screensaver ubuntu-lock-on-suspend false
+  become: no
